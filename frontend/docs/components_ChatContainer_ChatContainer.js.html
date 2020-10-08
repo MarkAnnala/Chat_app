@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/ChatContainer/ChatContainer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/ChatContainer/ChatContainer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import "../../assets/main.css";
+import SearchBar from "../SearchBar/SearchBar";
+import Chat from "../Chat/Chat";
+import ChatInput from "../ChatInput/ChatInput";
+import * as actions from "../../actions/actions";
+import { useDispatch, useSelector } from "react-redux";
+
+/**
+ * ChatContainer holds the layout of the focused view of a selected chat
+ * @property {string} focusedChat the name of the chat that we are currently focusing on
+ * @returns a div containing the SearchBar, Chat and ChatInput components
+ */
+const ChatContainer = ({ focusedChat }) => {
+  const dispatch = useDispatch();
+
+  /* State and callback functions for the SearchBar */
+
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  /**
+   * Set the state of searchTerm to the value of the input field when that changes
+   * @param event the event object of the window
+   */
+  const handleSearchInput = (event) => {
+    setSearching(false);
+    setSearchTerm(event.target.value);
+  };
+
+  /* used as a check if we are currenyly displaying searched messages */
+  const [searching, setSearching] = React.useState(false);
+  /**
+   * TODO Trigger the search of the searchTerm in the actuall focused chat
+   * @param event the event object of the window
+   */
+  const handleSearchSubmit = (event) => {
+    setSearching(true);
+    var filteredChat = [];
+    messages.map((chat) => {
+      if (chat.message.includes(searchTerm)) {
+        filteredChat.push(chat);
+      }
+    });
+
+    setMessages(filteredChat);
+    setSearchTerm("");
+    event.preventDefault();
+  };
+
+  const myUsername = useSelector((state) => state.socketState.username);
+  const listOfDms = useSelector((state) => state.socketState.listOfDms);
+
+  /**
+   * Check for the right DM object chatID wich matches the focusedChat prop
+   * @param {array} list the list containing Dm objects
+   * @return {array} array containing the list of message objects from the corresponding DM object
+   */
+  const rightChat = (list) => {
+    for (const chat of list) {
+      if (chat.chatID === focusedChat) {
+        return chat.messages;
+      }
+    }
+    return [];
+  };
+
+  const getChatName = (list) => {
+    for (const chat of list) {
+      if (chat.chatID === focusedChat) {
+        return chat.chatName;
+      }
+    }
+    return "";
+  };
+
+  const [messages, setMessages] = React.useState([]);
+
+  const [newMessage, setNewMessage] = React.useState("");
+
+  /**
+   * Set the messages state setting it to include the "newMessage" message
+   * @param event the event object of the window
+   */
+  const sendMessage = (event) => {
+    const today = new Date();
+    const month = today.getMonth() + 1; //January is 0, need to add 1
+    var hours = today.getHours() - 2; //convert to UTC
+    var minutes = today.getMinutes();
+    if (minutes &lt; 10) {
+      minutes = "0" + minutes.toString();
+    } else {
+      minutes = minutes.toString();
+    }
+    if (hours &lt; 10) {
+      hours = "0" + hours.toString();
+    } else {
+      hours = hours.toString();
+    }
+    const timestamp =
+      today.getFullYear().toString() +
+      "-" +
+      month.toString() +
+      "-" +
+      today.getDate().toString() +
+      " " +
+      hours +
+      ":" +
+      minutes +
+      ":" +
+      today.getSeconds().toString();
+    event.preventDefault();
+    setMessages([
+      ...messages,
+      { message: newMessage, username: myUsername, timestamp: timestamp },
+    ]);
+    dispatch(
+      actions.sendMessage({
+        message: newMessage,
+        username: myUsername,
+        chatID: focusedChat,
+        timestamp: timestamp,
+      })
+    );
+    setNewMessage("");
+  };
+
+  /**
+   * Set the newMessage state to whatever value is in event target
+   * @param event the event object of the window
+   */
+  const handleMessage = (event) => {
+    setNewMessage(event.target.value);
+  };
+
+  const [chatName, setChatName] = useState("");
+  /* HANDLING THE DISPLAY OF NEW MESSAGES AND NEW FOCUSED CHAT */
+  React.useEffect(() => {
+    if (listOfDms !== null &amp;&amp; searching === false) {
+      setMessages(rightChat(listOfDms));
+      setChatName(getChatName(listOfDms));
+      if (focusedChat) {
+        dispatch(actions.resetLastSeen({ chatID: focusedChat }));
+      }
+    }
+  }, [focusedChat, listOfDms, searching]);
+
+  return (
+    &lt;div className="flex flex-col content-center focused-view-custom-bg">
+      &lt;div className="text-3xl text-white self-center focused-view-custom-bg">{chatName}&lt;/div>
+      {focusedChat ? (
+        &lt;SearchBar
+          id="search-chat"
+          placeHolder="Search in this chat..."
+          value={searchTerm}
+          onButtonClick={handleSearchSubmit}
+          onInputChange={handleSearchInput}
+        />
+      ) : null}
+      {searching ? (
+        &lt;div
+          className="text-white p-2 input-box-custom-bg self-center cursor-pointer mt-4"
+          onClick={(e) => {
+            setSearching(false);
+          }}
+        >
+          Cancel Search
+        &lt;/div>
+      ) : null}
+      &lt;Chat messages={messages} />
+      {focusedChat ? (
+        &lt;ChatInput
+          message={newMessage}
+          handleInputChange={handleMessage}
+          handleButtonClick={sendMessage}
+        />
+      ) : null}
+    &lt;/div>
+  );
+};
+
+export default ChatContainer;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

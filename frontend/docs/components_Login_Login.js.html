@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Login/Login.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Login/Login.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import { useFormik, setNestedObjectValues } from "formik";
+
+import * as actions from "../../actions/actions";
+import { useDispatch } from "react-redux";
+import Register from "../Register/Register";
+
+const axios = require("axios");
+
+//axios.get("http://localhost:8080/", { crossdomain: true })
+
+/**
+ * Login provides the layout and login of a user
+ * A successfully validated form will redirect to LandingPage with pathname = "/start"
+ * @returns a div containing the form to fill out and its validation
+ */
+const Login = () => {
+  /* useDispatch from dispatch function from store */
+  const dispatch = useDispatch();
+  const [errorMsg, setErrorMsg] = useState(false);
+  const [fade, setFade] = useState(false);
+  const validate = (values) => {
+    const errors = {};
+    if (!values.Username) {
+      setErrorMsg(false);
+      errors.Username = "Required";
+    }
+
+    if (!values.Password) {
+      setErrorMsg(false);
+      errors.Password = "Required";
+      return errors;
+    }
+  };
+
+  console.log(setFade);
+  React.useEffect(() => {
+    setFade(document.getElementById("container"));
+  }, []);
+
+  const formik = useFormik({
+    initialValues: { Username: "", Password: "" },
+    validate,
+    onSubmit: (values) => {
+      axios
+        .post(
+          "/",
+          JSON.stringify({
+            action: "login",
+            username: values.Username,
+            password: values.Password,
+          })
+        )
+        .then(function (response) {
+          console.log(response);
+
+          /* The response contains: status and a payload data: server/token */
+          switch (response.status) {
+            /* Login accepted */
+
+            case 200: {
+              const data = {
+                response: response.data,
+                username: values.Username,
+              };
+
+              /* Data should contain token &amp; server */
+              dispatch(actions.setServer("ws://localhost:8080/websocket"));
+              dispatch(actions.loginSuccess(data));
+              break;
+            }
+            case 404: {
+              const data = response.data;
+              dispatch(actions.loginFailure({ data }));
+              break;
+            }
+            default:
+              alert("missing memberid");
+              break;
+          }
+        })
+        .catch(function (error) {
+          setErrorMsg(true);
+        });
+      /* Use the store reducer to dispatch login actions */
+      dispatch(actions.login({ values }));
+    },
+  });
+  return (
+    &lt;div
+      className="flex justify-center w-screen h-screen"
+      style={{
+        backgroundImage: "url(" + require("../../background_night.png") + ")",
+      }}
+    >
+      &lt;div className="container" id="container">
+        &lt;div className="form-container sign-in-container ">
+          &lt;form
+            className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 "
+            onSubmit={formik.handleSubmit}
+          >
+            &lt;p className=" justify-center text-4xl font-bold font-mono">
+              Log in
+            &lt;/p>
+            &lt;p className="font-mono text-xl ">
+              Enter your login details to access Chat Up!
+            &lt;/p>
+
+            &lt;div className="mb-4">
+              &lt;label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="Username"
+              >
+                Username
+              &lt;/label>
+              &lt;input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="Username"
+                name="Username"
+                type="Text"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.Username}
+              >&lt;/input>
+              &lt;div>
+                {formik.touched.Username &amp;&amp; formik.errors.Username ? (
+                  &lt;div className="text-red-600">{formik.errors.Username}&lt;/div>
+                ) : null}
+              &lt;/div>
+              &lt;div>
+                {errorMsg ? (
+                  &lt;label className="text-red-600">
+                    Login failed! Try something else.
+                  &lt;/label>
+                ) : null}
+              &lt;/div>
+              &lt;label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="Password"
+              >
+                Password
+              &lt;/label>
+              &lt;input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="Password"
+                name="Password"
+                type="Password"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.Password}
+              >&lt;/input>
+              &lt;div>
+                {formik.touched.Password &amp;&amp; formik.errors.Password ? (
+                  &lt;div className="text-red-600">{formik.errors.Password}&lt;/div>
+                ) : null}
+              &lt;/div>
+              &lt;button className="formButton" type="submit">
+                Login
+              &lt;/button>
+            &lt;/div>
+          &lt;/form>
+        &lt;/div>
+        &lt;div className="form-container sign-up-container">
+          &lt;Register container={fade}>&lt;/Register>
+        &lt;/div>
+        &lt;div className="overlay-container">
+          &lt;div className="overlay">
+            &lt;div className="overlay-panel overlay-left">
+              &lt;h1 className="intro-header text-2xl"> Hey there!&lt;/h1>
+              &lt;p className="form-paragraphs">
+                To keep connected with us please login with your personal info
+              &lt;/p>
+              &lt;button
+                className="ghost formButton"
+                id="signIn"
+                onClick={() => fade.classList.remove("right-panel-active")}
+              >
+                Sign In
+              &lt;/button>
+            &lt;/div>
+            &lt;div className="overlay-panel overlay-right">
+              &lt;h1 className="intro-header text-2xl"> Welcome!&lt;/h1>
+              &lt;p className="form-paragraphs">
+                Enter your personal details to join the Chat Up community!
+              &lt;/p>
+              &lt;button
+                className="ghost formButton"
+                id="signUp"
+                onClick={() => fade.classList.add("right-panel-active")}
+              >
+                Sign Up
+              &lt;/button>
+            &lt;/div>
+          &lt;/div>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+export default Login;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

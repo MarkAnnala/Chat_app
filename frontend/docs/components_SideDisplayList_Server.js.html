@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/SideDisplayList/Server.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/SideDisplayList/Server.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from "react";
+import * as actions from "../../actions/actions";
+import { useDispatch, useSelector } from "react-redux";
+import ReactTooltip from "react-tooltip";
+import globalButton from "../../img/global.svg";
+import globalButtonHover from "../../img/globalHover.svg";
+
+const axios = require("axios");
+
+/**
+ * Component for displaying the global server
+ * @property {function} handleFocusedPage Callback function passed down from LandingPage - Used to get id of what page we click on
+ * @property {object} server the global server object
+ * @property {Function} resetFocusedThread - callback for resetting the currently focused thread
+ * @property {function} setThreadLock used for locking the rendering of threads
+ * @returns the button of the global server
+ */
+const Server = ({
+  server,
+  handleFocusedPage,
+  resetFocusedThread,
+  setThreadLock,
+}) => {
+  /* useDispatch from dispatch function from store */
+  const dispatch = useDispatch();
+
+  /*Get the username, magictoken and list of threads from store */
+  const username = useSelector((state) => state.socketState.username);
+  const magic_token = useSelector((state) => state.socketState.magicToken);
+
+  /*Reset the focused thread, so we show all threads in focusedview */
+  const handle = (e) => {
+    fetchThreads();
+    resetFocusedThread();
+    handleFocusedPage(e);
+  };
+
+  async function fetchThreads() {
+    setThreadLock(false);
+    try {
+      const response = await axios.post(
+        "/",
+        JSON.stringify({
+          action: "fetch_server_contents",
+          server_name: server.serverName,
+          magic_token: magic_token,
+          username: username,
+        })
+      );
+      const data = await response;
+      switch (data.status) {
+        case 200:
+          {
+            console.log(data.data);
+            /*The threads in the list of threads recieced looks different, need to create new thredobjects from that information */
+            let threads = [];
+            for (const thread of data.data.threads) {
+              threads.push({
+                rootPost: {
+                  rootHeader: thread.header,
+                  rootComment: thread.text,
+                },
+                username: thread.creator,
+                timestamp: thread.timestamp,
+                comments: thread.comment_list,
+                id: thread.thread_id,
+              });
+            }
+            dispatch(actions.addThreads({ threads: threads }));
+          }
+          setThreadLock(true);
+          break;
+        case 404: {
+          console.log(data);
+          setThreadLock(true);
+          break;
+        }
+        default:
+          setThreadLock(true);
+          alert("cannot fetch threads from server");
+          break;
+      }
+    } catch (error) {
+      console.log(error);
+      setThreadLock(true);
+    }
+  }
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    &lt;div className="flex flex-row justify-center">
+      &lt;img
+        id={server.serverName}
+        onMouseEnter={() => {
+          setHovered(!hovered);
+        }}
+        onMouseLeave={() => {
+          setHovered(!hovered);
+        }}
+        data-tip
+        data-for="goToGlobalServer"
+        src={hovered ? globalButtonHover : globalButton}
+        onClick={handle}
+        className="cursor-pointer h-12 w-12 pt-2 mt-2 text-center"
+        alt="global server button"
+      />
+      &lt;ReactTooltip
+        id="goToGlobalServer"
+        place="right"
+        effect="solid"
+        backgroundColor="black"
+      >
+        The Global Server
+      &lt;/ReactTooltip>
+    &lt;/div>
+  );
+};
+
+export default Server;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

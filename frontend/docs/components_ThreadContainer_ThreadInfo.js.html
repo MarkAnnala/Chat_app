@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/ThreadContainer/ThreadInfo.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/ThreadContainer/ThreadInfo.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from "react";
+import comments from "../../img/comments.svg";
+import startChat from "../../img/startChat.svg";
+import { useSelector, useDispatch } from "react-redux";
+import * as actions from "../../actions/actions.js";
+import ReactTooltip from "react-tooltip";
+
+/**
+ * Threadinfo shows initial information about a thread
+ * @property {object} thread the current thread object
+ * @property {Function} handleFocusedThread - callback funktion for setting which thread we are focusing on
+ * @returns a div with information about thread
+ */
+const ThreadInfo = ({ thread, handleFocusedThread }) => {
+  const username = useSelector((state) => state.socketState.username);
+  const dispatch = useDispatch();
+
+  return (
+    &lt;div
+      id={thread.id}
+      style={{ backgroundColor: "#2C2F33" }}
+      onClick={handleFocusedThread}
+      className="w-full p-2 mt-3 flex flex-col shadow-inner shadow-lg"
+    >
+      &lt;div id={thread.id} className="flex flex-row">
+        &lt;div id={thread.id} className="border-2 w-20 h-20 ">&lt;/div>
+        &lt;div id={thread.id}>
+          &lt;div id={thread.id} className="text-xs pl-2 text-white">
+            Posted by: {thread.username} on {thread.timestamp}
+          &lt;/div>
+          &lt;div id={thread.id} className=" text-3xl text-white pl-2 w-auto">
+            {thread.rootPost.rootHeader}
+          &lt;/div>
+        &lt;/div>
+        {thread.username !== username ? (
+          &lt;img
+            data-tip
+            data-for="createChatOP"
+            className="self-end ml-auto cursor-pointer"
+            src={startChat}
+            onClick={() => {
+              dispatch(
+                actions.startChat({
+                  chatName: thread.username,
+                  from: username,
+                  members: [username, thread.username],
+                })
+              );
+            }}
+            alt="add chat button"
+          />
+        ) : (
+          ""
+        )}
+        &lt;ReactTooltip id="createChatOP" place="left" effect="solid">
+          Create a chat with OP!
+        &lt;/ReactTooltip>
+        &lt;img
+          id={thread.id}
+          src={comments}
+          className={
+            thread.username !== username ? "self-end" : "self-end ml-auto"
+          }
+          alt="displaying num of comments"
+        />
+        &lt;span className="self-end">{thread.comments.length}&lt;/span>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+export default ThreadInfo;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

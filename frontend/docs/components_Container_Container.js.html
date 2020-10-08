@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Container/Container.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Container/Container.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useRef, useEffect } from "react";
+import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import LandingPage from "../LandingPage/LandingPage";
+import Login from "../Login/Login";
+import Register from "../Register/Register";
+
+import * as actions from "../../actions/actions";
+import { useDispatch, useSelector } from "react-redux";
+
+/**
+ * Container is the component that makes sure to route to specific component on start page also
+ * handles the listener / connection to the websocket
+ * @returns returns the actual component that should be rendered depending on pathname
+ */
+const Container = () => {
+  /**
+   * HANDLING AND INITIALISATION OF WEBSOCKET EFFECTS
+   */
+
+  /* ws is the websocket that we are connected to */
+  const ws = useSelector((state) => state.socketState.socket);
+
+  /* used in useEffect to check if disconnect is by our own accord */
+  const wsOnline = useSelector((state) => state.socketState.wsOnline);
+
+  /* websocket url - will contain address when we call SETSERVER action */
+  const url = useSelector((state) => state.socketState.socketServer);
+
+  const dispatch = useDispatch();
+
+  /* used for first login repsonse to the socket*/
+  const loginResponse = useSelector((state) => state.loginState.loginResponse);
+  /* used for first login repsonse to the socket*/
+  const username = useSelector((state) => state.loginState.username);
+
+  // used to keep a mutable ref object - in this case the websocket which will not change automatically during a re-render
+  const wsRef = useRef();
+  wsRef.current = ws;
+
+  /* 
+    used only for checking if we have made our first response for socket
+    We need to do this because the first response has to look a certain way
+    for the webserver to authenticate us
+  */
+  var firstWelcome = useSelector((state) => state.socketState.firstWelcome);
+
+  useEffect(() => {
+    /* if current prop of ref is null and ws url is set -> initialize new websocket connection */
+    if (!wsRef.current &amp;&amp; url !== null) {
+      dispatch(actions.connect());
+    }
+
+    /* socket is online  */
+    if (wsRef.current != null) {
+      /* listening on websocket */
+      wsRef.current.onmessage = (msg) => {
+        //first time we need to establish an authentication with server
+        if (firstWelcome === true) {
+          dispatch(
+            actions.response({
+              action: "login",
+              username: username,
+              magictoken: loginResponse,
+            })
+          );
+        } else {
+          dispatch(actions.response(msg));
+        }
+      };
+
+      /* our websocket disconnected */
+      wsRef.current.onclose = () => {
+        if (wsOnline) {
+          /* trigger a reconnect */
+          console.log("reconnect to new ws");
+          dispatch(actions.connect());
+        } else {
+          /* disconnect the ws */
+          console.log("ws disconnected");
+          dispatch(actions.disconnected(null));
+        }
+      };
+    }
+  }, [ws, url, firstWelcome]);
+
+  /* a variable which checks wether we've successfully logged in or not taken from redux store */
+  const loginSuccess = useSelector((state) => state.loginState.loginSuccess);
+
+  return (
+    &lt;BrowserRouter>
+      &lt;Switch>
+        &lt;Route path="/" exact>
+          {loginSuccess ? &lt;Redirect to="/start" /> : &lt;Login />}
+        &lt;/Route>
+        &lt;Route path="/start">
+          {loginSuccess ? &lt;LandingPage /> : &lt;Redirect to="/" />}
+        &lt;/Route>
+        &lt;Route path="/register" render={(props) => &lt;Register {...props} />} />
+      &lt;/Switch>
+    &lt;/BrowserRouter>
+  );
+};
+
+export default Container;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

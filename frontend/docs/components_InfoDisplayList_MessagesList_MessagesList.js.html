@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/InfoDisplayList/MessagesList/MessagesList.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/InfoDisplayList/MessagesList/MessagesList.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect, useRef } from "react";
+import plus from "../../../img/plus.svg";
+import StartChat from "./StartChat";
+import { useSelector } from "react-redux";
+import ReactTooltip from "react-tooltip";
+
+/**
+ * contains the list of available direct messages that we can chat in
+ * @param {function} handleFocusedChat callback function used to get the target of what we are clicking on
+ * @property {string} username  username of the logged in user
+ * @property {String} focusedChat - a string used to check what chat we are focusing on
+ * returns a div containing all direct messages
+ */
+const MessagesList = ({ handleFocusedChat, username, focusedChat }) => {
+  /* Get friendslist from redux store */
+  const friends = useSelector((state) => state.socketState.listOfFriends);
+
+  /* Get list of dms from redux store */
+  const chatObjects = useSelector((state) => state.socketState.listOfDms);
+
+  const [chats, setChats] = useState([]);
+
+  useEffect(() => {
+    if (chatObjects !== null) {
+      setChats(chatObjects);
+    }
+  }, [chatObjects]);
+
+  /* Determens if we're showing the add chat modal */
+  const [showAddChat, setShowAddChat] = useState(false);
+  /* Used to highlight the add icon when hovered */
+  const [hovered, setHovered] = useState(false);
+  /*On mount, add event listerner for click outside ref addChatModal*/
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, []);
+
+  /**
+   * handles a click outside of the create chat modal
+   * @param event of the window object
+   */
+  const handleClick = (event) => {
+    if (addChatModal.current.contains(event.target)) {
+      // inside click
+      return;
+    } else {
+      setShowAddChat(false);
+    }
+  };
+  /*Keep track of the modal */
+  const addChatModal = useRef();
+
+  return (
+    &lt;div className="flex flex-col ml-2">
+      &lt;div
+        id="messagesList"
+        className="mt-5 text-white text-xl h-auto border-solid border-b-2 border-gray-700 flex flex-row justify-between"
+      >
+        Direct Messages
+        &lt;img
+          data-tip
+          data-for="createChatTip"
+          onClick={() => {
+            setShowAddChat(true);
+          }}
+          src={plus}
+          onMouseEnter={() => {
+            setHovered(!hovered);
+          }}
+          onMouseLeave={() => {
+            setHovered(!hovered);
+          }}
+          alt="Create a new chat!"
+          className={
+            hovered
+              ? "plusIcon-custom-hover h-6 w-6 cursor-pointer"
+              : "h-6 w-6 cursor-pointer"
+          }
+        />
+        &lt;ReactTooltip id="createChatTip" place="right" effect="solid">
+          Create a new chat!
+        &lt;/ReactTooltip>
+      &lt;/div>
+
+      &lt;div ref={addChatModal}>
+        {showAddChat ? (
+          &lt;StartChat
+            setShowAddChat={setShowAddChat}
+            username={username}
+            friends={friends}
+          />
+        ) : null}
+      &lt;/div>
+      &lt;div className="flex flex-col">
+        {chats.map((chat, index) => {
+          return (
+            &lt;div
+              onClick={handleFocusedChat}
+              key={index}
+              id={chat.chatID}
+              className="text-white text-xl hover:bg-gray-500 cursor-pointer flex flex-row justify-between"
+            >
+              {/* TODO FIX SAME ID BAD PRAXIS */}
+              &lt;div id={chat.chatID}>{chat.chatName} &lt;/div>
+              &lt;div className="text-red-700">
+                {focusedChat === chat.chatID
+                  ? ""
+                  : !chat.sinceLastSeen
+                  ? ""
+                  : "+" + chat.sinceLastSeen}
+              &lt;/div>
+            &lt;/div>
+          );
+        })}
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+export default MessagesList;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#Chat">Chat</a></li><li><a href="global.html#ChatContainer">ChatContainer</a></li><li><a href="global.html#ChatInput">ChatInput</a></li><li><a href="global.html#Comment">Comment</a></li><li><a href="global.html#Container">Container</a></li><li><a href="global.html#CreateThread">CreateThread</a></li><li><a href="global.html#FocusedView">FocusedView</a></li><li><a href="global.html#FriendsList">FriendsList</a></li><li><a href="global.html#getChatIndex">getChatIndex</a></li><li><a href="global.html#InfoDisplayList">InfoDisplayList</a></li><li><a href="global.html#InformationHeader">InformationHeader</a></li><li><a href="global.html#InputBox">InputBox</a></li><li><a href="global.html#LandingPage">LandingPage</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#loginReducer">loginReducer</a></li><li><a href="global.html#Logout">Logout</a></li><li><a href="global.html#logoutHandler">logoutHandler</a></li><li><a href="global.html#Message">Message</a></li><li><a href="global.html#MessagesList">MessagesList</a></li><li><a href="global.html#OriginalPost">OriginalPost</a></li><li><a href="global.html#Register">Register</a></li><li><a href="global.html#rootReducer">rootReducer</a></li><li><a href="global.html#SearchBar">SearchBar</a></li><li><a href="global.html#Server">Server</a></li><li><a href="global.html#ServerInformation">ServerInformation</a></li><li><a href="global.html#SideDisplayList">SideDisplayList</a></li><li><a href="global.html#socketReducer">socketReducer</a></li><li><a href="global.html#StartChat">StartChat</a></li><li><a href="global.html#ThreadContainer">ThreadContainer</a></li><li><a href="global.html#ThreadInfo">ThreadInfo</a></li><li><a href="global.html#ThreadList">ThreadList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Jun 01 2020 10:44:55 GMT+0200 (centraleuropeisk sommartid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
